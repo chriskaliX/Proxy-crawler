@@ -22,7 +22,7 @@
 - 全网代理
 
 # API
-在python3启动脚本后，访问http://127.0.0.1:5000/all获取所有代理，http://127.0.0.1:5000/http获取http代理，http://127.0.0.1:5000/https获取https代理。若有其他查询需求，可在main.py文件里自行修改
+在python3启动脚本后，访问http://127.0.0.1:5000/all 获取所有代理，http://127.0.0.1:5000/http 获取http代理，http://127.0.0.1:5000/https 获取https代理。若有其他查询需求，可在main.py文件里自行修改
 
 # Purpose
 - 练习python，简单的使用异步、flask等
