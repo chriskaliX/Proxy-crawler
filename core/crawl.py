@@ -2,13 +2,13 @@ import asyncio
 import time
 import aiohttp
 from lxml import etree
-from data.var import *
 import random
 from functools import reduce
+import data.var
 
 class crawl:
     @staticmethod
-    async def get(url, analyze, Q):
+    async def get(url, analyze):
         try:
             headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:69.0) Gecko/20100101 Firefox/69.0'}
@@ -18,7 +18,7 @@ class crawl:
                     assert resp.status == 200
                     r = await resp.text()
                     for res in analyze(r):
-                        Q.put(res)
+                        data.var.pre.put(res)
         except asyncio.TimeoutError:
             print("[*] Timeout!")
         except AssertionError:
@@ -37,7 +37,7 @@ class crawl:
     "[*] 尼玛代理，更新较快(但是最近好像不更新了...)"
     class nima:
         @staticmethod
-        def run(Q):
+        def run():
             print("[*] 泥马代理爬取")
             def analyze(html):
                 html = etree.HTML(html)
@@ -54,13 +54,13 @@ class crawl:
                 "http://www.nimadaili.com/http/",
                 "http://www.nimadaili.com/https/",
                 "http://www.nimadaili.com/gaoni/"]
-            tasks = [crawl.get(url+str(page)+"/",analyze,Q) for url in urls for page in range(1, 16)]
+            tasks = [crawl.get(url+str(page)+"/",analyze) for url in urls for page in range(1, 16)]
             crawl.runloop(tasks,2,0.5)
     
     "[*] 西刺代理，量不是很大"
     class xici:
         @staticmethod
-        def run(Q):
+        def run():
             print("[*] 西刺代理爬取")
             def analyze(html):
                 html = etree.HTML(html)
@@ -73,14 +73,14 @@ class crawl:
                 "https://www.xicidaili.com/nt/",
                 "https://www.xicidaili.com/wn/",
                 "https://www.xicidaili.com/wt/"]
-            tasks = [crawl.get(url+str(page)+"/", analyze, Q)
+            tasks = [crawl.get(url+str(page)+"/", analyze)
                      for url in urls for page in range(1, 4)]
             crawl.runloop(tasks, 1, 3)
     
     "[*] 量小，更新快，一天多次"
     class freeip:
         @staticmethod
-        def run(Q):
+        def run():
             print("[*] FreeIP爬取")
             def analyze(html):
                 html = etree.HTML(html)
@@ -91,13 +91,13 @@ class crawl:
                     if html.xpath("/html/body/div[1]/div/div[1]/div[2]/table/tbody/tr[%d]/td[2]" % i) != []]
 
             url = "http://ip.jiangxianli.com/"
-            tasks = [crawl.get(url + "?page="+ str(page),analyze, Q) for page in range(1,4)]
+            tasks = [crawl.get(url + "?page="+ str(page),analyze) for page in range(1,4)]
             crawl.runloop(tasks, 1, 1)
     
     "[*] 较好，一天多次"
     class superfast:
         @staticmethod
-        def run(Q):
+        def run():
             print("[*] 快代理爬取")
             def analyze(html):
                 html = etree.HTML(html)
@@ -107,13 +107,13 @@ class crawl:
                          } for i in range(1, 21) 
                         if html.xpath('/html/body/div[3]/div/div/div[2]/div/table/tbody/tr[%d]/td[1]' % i) != []]
             url = "http://www.superfastip.com/welcome/freeip/"
-            tasks = [crawl.get(url + "%d" % page,analyze, Q) for page in range(1,11)]
+            tasks = [crawl.get(url + "%d" % page,analyze) for page in range(1,11)]
             crawl.runloop(tasks,1,1)
 
     "[*] 更新慢，量多"
     class ssip:
         @staticmethod
-        def run(Q):
+        def run():
             print("[*] 66ip代理爬取")
             def analyze(html):
                 html = etree.HTML(html)
@@ -130,13 +130,13 @@ class crawl:
                 return reduce(run_function, [[], ] + result)
                 
             urls = ["http://www.66ip.cn/areaindex_%d/1.html" % i for i in range(1,35)]
-            tasks = [crawl.get(url, analyze, Q) for url in urls]
+            tasks = [crawl.get(url, analyze) for url in urls]
             crawl.runloop(tasks, 1, 1)
 
     "[*] 更新慢"
     class iphai:
         @staticmethod
-        def run(Q):
+        def run():
             print("[*] IP海代理爬取")
             def analyze(html):
                 html = etree.HTML(html)
@@ -149,13 +149,13 @@ class crawl:
                     "http://www.iphai.com/free/np",
                     "http://www.iphai.com/free/wg",
                     "http://www.iphai.com/free/wp"]
-            tasks = [crawl.get(url,analyze, Q) for url in urls]
+            tasks = [crawl.get(url,analyze) for url in urls]
             crawl.runloop(tasks, 1, 1)
                         
     "[*] 量少，15分钟一次"
     class quanwang:
         @staticmethod
-        def run(Q):
+        def run():
             """
             [*]过程比较复杂，直接在Proxy_Pool的代码上加了一点
             """
@@ -191,5 +191,5 @@ class crawl:
                         pass
                 return result
             url = "http://www.goubanjia.com/"
-            tasks = [crawl.get(url, analyze, Q)]
+            tasks = [crawl.get(url, analyze)]
             crawl.runloop(tasks, 1, 1)

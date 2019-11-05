@@ -9,11 +9,12 @@ import threading
 import traceback
 import sys
 import time
+import data.var
 sys.path.append(os.path.abspath('../async-proxy'))
 
 class verify:
     @staticmethod
-    def run(iplist):
+    def run():
         async def Check(ip):
             if not ip['ip']:
                 return False
@@ -48,17 +49,18 @@ class verify:
 
         async def GetValidProxyPool(iplist):
             validProxyList = list()
-            SIZE = 10
-            for i in range(0, len(iplist), SIZE):
-                coroList = [asyncio.ensure_future(Check(ip)) for ip in iplist[i:i+SIZE]]
-                for f in asyncio.as_completed(coroList):
-                    proxy = await f
-                    if proxy:
-                        validProxyList.append(proxy)
+            # SIZE = 10
+            # for i in range(0, iplist.qsize, SIZE):
+            # for i in range(iplist.qsize):
+            coroList = [asyncio.ensure_future(Check(ip)) for ip in iplist.queue]
+            for f in asyncio.as_completed(coroList):
+                proxy = await f
+                if proxy:
+                    validProxyList.append(proxy)
             return validProxyList
 
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         loop = asyncio.get_event_loop()
-        validProxyList = loop.run_until_complete(GetValidProxyPool(iplist))
+        validProxyList = loop.run_until_complete(GetValidProxyPool(data.var.pre))
         return validProxyList

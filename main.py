@@ -1,5 +1,5 @@
 import os,sys,schedule,time,threading
-from data.var import *
+import data.var
 from core.crawl import *
 from core.verify import *
 import sqlite3,json
@@ -12,14 +12,11 @@ sys.path.append(os.path.abspath('../async-proxy'))
 conn = sqlite3.connect('data/proxy.db', check_same_thread=False)
 print("[*] 数据库连接成功")
 
-def getip(Q,conn):
+def getip(conn):
     sql = conn.cursor()
     while True:
-        time.sleep(5)
-        waitlist = [Q.get() for i in range(100) if not Q.empty()]
-        if not waitlist:
-            continue
-        vaild = verify.run(waitlist)
+        time.sleep(10)
+        vaild = verify.run()
         iplist = [ip[0] for ip in sql.execute("SELECT * FROM PROXY").fetchall()]
         for ip in vaild:
             "[*] 没有则插入，有则更新"
@@ -82,7 +79,6 @@ def aftermin(count):
     return (datetime.datetime.now()+datetime.timedelta(minutes=count)).strftime("%H:%M")
 
 if __name__ == '__main__':
-    glo = Global()
     sql = conn.cursor()
     """
     # 创建表
@@ -97,23 +93,23 @@ if __name__ == '__main__':
     """
     # sql.execute("delete from PROXY;")
     # print("[*] 数据库清空完毕")
-    conn.commit()
+    # conn.commit()
     
 
-    t = threading.Thread(target=getip, args=(glo.pre, conn))
+    t = threading.Thread(target=getip, args=(conn,))
     t.start()
     print("[*] 后台验证开启")
-    schedule.every().day.at(aftermin(1)).do(crawl.xici.run, glo.pre)
-    schedule.every().day.at(aftermin(5)).do(crawl.nima.run, glo.pre)
-    schedule.every(15).minutes.do(crawl.freeip.run, glo.pre)
-    schedule.every().day.at(aftermin(10)).do(crawl.ssip.run, glo.pre)
-    schedule.every(10).minutes.do(crawl.quanwang.run, glo.pre)
-    schedule.every().hour.do(crawl.superfast.run, glo.pre)
-    schedule.every(3).hours.do(crawl.iphai.run, glo.pre)
+    schedule.every().day.at(aftermin(1)).do(crawl.xici.run,)
+    schedule.every().day.at(aftermin(5)).do(crawl.nima.run,)
+    schedule.every(15).minutes.do(crawl.freeip.run,)
+    schedule.every().day.at(aftermin(10)).do(crawl.ssip.run,)
+    schedule.every(10).minutes.do(crawl.quanwang.run,)
+    schedule.every().hour.do(crawl.superfast.run,)
+    schedule.every(3).hours.do(crawl.iphai.run,)
 
     #时间超过1800秒的重新跑，一分钟校验一次
     _time = 1800
-    schedule.every(1).minutes.do(checktime, glo.pre,conn,_time)
+    schedule.every(1).minutes.do(checktime, conn,_time)
     def back():
         while True:
             schedule.run_pending()
